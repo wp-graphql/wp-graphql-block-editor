@@ -9,7 +9,7 @@
         }
     ],
     "require": {
-        "php": ">=7.1.0"
+        "php": ">=7.4"
     },
     "require-dev": {
         "lucatume/wp-browser": "^2.4",
@@ -31,8 +31,7 @@
         "wp-graphql/wp-graphql-testcase": "^1.1",
         "phpunit/phpunit": "^7.5",
         "simpod/php-coveralls-mirror": "^3.0",
-        "phpstan/extension-installer": "^1.1",
-        "wp-graphql/wp-graphql": "dev-master"
+        "phpstan/extension-installer": "^1.1"
     },
     "license": "GPL-3.0-or-later",
     "config": {

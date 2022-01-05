@@ -3,6 +3,7 @@ DS_Store
 .idea
 .vscode
 vendor
+!vendor/autoload.php
 !/tests
 /tests/*.suite.yml
 plugin-build

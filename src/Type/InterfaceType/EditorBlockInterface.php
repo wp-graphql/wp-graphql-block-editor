@@ -43,8 +43,9 @@ class EditorBlockInterface {
 	 */
 	public static function register_type( TypeRegistry $type_registry ) {
 
-		register_graphql_interface_type( 'WithEditorBlocks', [
+		register_graphql_interface_type( 'NodeWithEditorBlocks', [
 			'description' => __( 'Node that has editor blocks associated with it', 'wp-graphql-block-editor' ),
+			'eagerlyLoadType' => true,
 			'fields'      => [
 				'editorBlocks' => [
 					'type'        => [
@@ -55,7 +56,17 @@ class EditorBlockInterface {
 
 						$content = null;
 						if ( $node instanceof Post ) {
-							$content = $node->contentRaw;
+
+							// @todo: this is restricted intentionally.
+							// $content = $node->contentRaw;
+
+							// This is the unrestricted version, but we need to
+							// probably have a "Block" Model that handles
+							// determining what fields should/should not be
+							// allowed to be returned?
+							$post = get_post( $node->databaseId );
+							$content = $post->post_content;
+
 						}
 
 						if ( empty( $content ) ) {
@@ -76,11 +87,11 @@ class EditorBlockInterface {
 
 						$parsed_blocks = array_map( function( $parsed_block ) {
 							$parsed_block['nodeId'] = uniqid();
-							wp_send_json( $parsed_block );
+//							wp_send_json( $parsed_block );
 							return $parsed_block;
 						}, $parsed_blocks );
 
-						wp_send_json( serialize_blocks( $parsed_blocks ) );
+//						wp_send_json( serialize_blocks( $parsed_blocks ) );
 
 						return $parsed_blocks;
 					}
@@ -90,6 +101,7 @@ class EditorBlockInterface {
 
 		// Register the EditorBlock Interface
 		register_graphql_interface_type( 'EditorBlock', [
+			'eagerlyLoadType' => true,
 			'description' => __( 'Blocks that can be edited to create content and layouts', 'wp-graphql-block-editor' ),
 			'fields'      => [
 				'name'                    => [
@@ -117,13 +129,13 @@ class EditorBlockInterface {
 						return isset( self::get_block( $block, $context )->api_version ) && absint( self::get_block( $block, $context )->api_version ) ? absint( self::get_block( $block, $context )->api_version ) : 2;
 					},
 				],
-				'supports'                => [
-					'type'        => 'EditorBlockSupports',
-					'description' => __( 'Features supported by the block', 'wp-graphql-block-editor' ),
-					'resolve'     => function( $block ) {
-						return isset( $block['supports'] ) && is_array( $block['supports'] ) ? $block['supports'] : [];
-					},
-				],
+//				'supports'                => [
+//					'type'        => 'EditorBlockSupports',
+//					'description' => __( 'Features supported by the block', 'wp-graphql-block-editor' ),
+//					'resolve'     => function( $block ) {
+//						return isset( $block['supports'] ) && is_array( $block['supports'] ) ? $block['supports'] : [];
+//					},
+//				],
 				'cssClassNames'           => [
 					'type'        => [ 'list_of' => 'String' ],
 					'description' => __( 'CSS Classnames to apply to the block', 'wp-graphql-block-editor' ),
@@ -133,6 +145,13 @@ class EditorBlockInterface {
 						}
 
 						return null;
+					}
+				],
+				'renderedHtml' => [
+					'type' => 'String',
+					'description' => __( 'The rendered HTML for the block', 'wp-graphql-block-editor' ),
+					'resolve' => function( $block ) {
+						return render_block( $block );
 					}
 				]
 			],

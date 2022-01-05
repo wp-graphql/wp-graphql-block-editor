@@ -4,6 +4,7 @@ namespace WPGraphQL\BlockEditor\Registry;
 use Exception;
 use WP_Block_Type;
 use WPGraphQL\BlockEditor\Blocks\Block;
+use WPGraphQL\BlockEditor\Type\InterfaceType\BlocksJSONInterface;
 use WPGraphQL\BlockEditor\Type\InterfaceType\EditorBlockInterface;
 use WPGraphQL\Registry\TypeRegistry;
 use WPGraphQL\Utils\Utils;
@@ -39,55 +40,9 @@ class Registry {
 	 */
 	public function init() {
 
-		register_graphql_object_type( 'EditorBlockSpacing', [
-			'fields' => [
-				'padding' => [
-					'type' => 'Boolean',
-				],
-			],
-		]);
-
-		register_graphql_object_type( 'EditorBlockSupports', [
-			'fields' => [
-				'inserter' => [
-					'type' => 'Boolean',
-				],
-				'multiple' => [
-					'type' => 'Boolean',
-				],
-				'anchor' => [
-					'type' => 'Boolean',
-				],
-				'align' => [
-					'type' => 'BlockAlignment',
-				],
-				'__experimentalSelector' => [
-					'type' => 'String',
-				],
-				'__experimentalFontFamily' => [
-					'type' => 'Boolean',
-				],
-				'fontSize' => [
-					'type' => 'Boolean',
-				],
-				'customClassName' => [
-					'type' => 'Boolean',
-				],
-				'html' => [
-					'type' => 'Boolean',
-				],
-				"reusable" => [
-					'type' => 'Boolean',
-				],
-				"spacing" => [
-					'type' => 'BlockEditorSpacing'
-				],
-
-			]
-		]);
-
-		// Register the EditorBlock Interface
+//		// Register the EditorBlock Interface
 		EditorBlockInterface::register_type( $this->type_registry );
+		BlocksJSONInterface::register_type( $this->type_registry );
 
 		$this->pass_blocks_to_context();
 		$this->register_block_types();
@@ -187,13 +142,21 @@ class Registry {
 				continue;
 			}
 
-			$supported_post_types[] = $block_editor_post_type;
+			$supported_post_types[] = Utils::format_type_name( $block_editor_post_type->graphql_single_name );
+
+
 		}
 
 		// If there are no supported post types, early return
 		if ( empty( $supported_post_types ) ) {
 			return;
 		}
+
+
+//		wp_send_json( [
+//			'interfaces' => [ 'NodeWithBlocksJSON', 'NodeWithEditorBlocks' ],
+//			'types' => $supported_post_types
+//		]);
 
 		// Register the `WithBlockEditor` Interface to the supported post types
 		//
@@ -202,7 +165,7 @@ class Registry {
 		// should not see Block A in the possible blocks for Post Type B.
 		// So, instead of one generic Interface to return all registered blocks, it would be nice
 		// to show the blocks that are truly possible to be returned for that location
-		register_graphql_interfaces_to_types( 'WithEditorBlocks', wp_list_pluck( $supported_post_types, 'graphql_single_name' ) );
+		 register_graphql_interfaces_to_types( [ 'NodeWithBlocksJSON', 'NodeWithEditorBlocks' ], $supported_post_types );
 
 	}
 
