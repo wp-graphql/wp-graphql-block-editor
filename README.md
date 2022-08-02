@@ -7,6 +7,10 @@ This stems from this blog post: https://www.wpgraphql.com/2021/03/09/gutenberg-a
 
 And this Github issue: https://github.com/wp-graphql/wp-graphql/issues/1764
 
+## BETA NOTICE
+
+This plugin is an experimental beta plugin. It is not officially supported at the moment and will have breaking changes as it progresses. Use at your own risk.
+
 ## Problems
 
 ### Server Awareness
